@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "458124475643",
+    "project_id": "campeonatofree-a5008",
+    "storage_bucket": "campeonatofree-a5008.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458124475643:android:e575e620f808a3457b045e",
+        "android_client_info": {
+          "package_name": "com.app.campeonatofree"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8rmFP5Bi8BRrRmruA91tmjF6HseugDh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

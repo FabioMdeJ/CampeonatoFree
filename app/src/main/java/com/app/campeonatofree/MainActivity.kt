@@ -21,24 +21,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.campeonatofree.ui.theme.CampeonatoFreeTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.runtime.LaunchedEffect
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
+
+
         setContent {
 
             var telaAtual by remember { mutableStateOf("inicial") }
 
             CampeonatoFreeTheme {
 
-                if (telaAtual == "inicial") {
-                    TelaInicial(
-                        onCriarClick = { telaAtual = "criar" }
+                when (telaAtual) {
+
+                    "inicial" -> TelaInicial(
+                        onCriarClick = { telaAtual = "criar" },
+                        onVerCampeonatos = { telaAtual = "lista" }
                     )
-                } else {
-                    TelaCriarCampeonato()
+
+                    "criar" -> TelaCriarCampeonato()
+
+                    "lista" -> TelaListaCampeonatos()
                 }
+
             }
         }
     }
@@ -48,7 +59,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TelaInicial(
     modifier: Modifier = Modifier,
-    onCriarClick: () -> Unit
+    onCriarClick: () -> Unit,
+    onVerCampeonatos: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -77,6 +89,11 @@ fun TelaInicial(
         Button(onClick = onCriarClick) {
             Text("Criar Campeonato")
         }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Button(onClick = onVerCampeonatos) {
+            Text("Ver Campeonatos")
+        }
     }
 }
 
@@ -84,6 +101,8 @@ fun TelaInicial(
 fun TelaCriarCampeonato() {
 
     var nomeCampeonato by remember { mutableStateOf("") }
+
+    val db = FirebaseFirestore.getInstance()
 
     Column(
         modifier = Modifier
@@ -102,14 +121,70 @@ fun TelaCriarCampeonato() {
 
         TextField(
             value = nomeCampeonato,
-            onValueChange = {nomeCampeonato = it},
+            onValueChange = { nomeCampeonato = it },
             label = { Text("Nome do campeonato") }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = {}) {
+        Button(onClick = {
+
+            val campeonato = hashMapOf(
+                "nome" to nomeCampeonato
+            )
+
+            db.collection("campeonatos")
+                .add(campeonato)
+
+        }) {
             Text("Salvar")
+        }
+    }
+}
+
+@Composable
+fun TelaListaCampeonatos() {
+
+    val db = FirebaseFirestore.getInstance()
+    var listaCampeonatos by remember { mutableStateOf(listOf<String>()) }
+
+    LaunchedEffect(Unit) {
+        db.collection("campeonatos")
+            .get()
+            .addOnSuccessListener { result ->
+
+                val nomes = mutableListOf<String>()
+
+                for (document in result) {
+                    val nome = document.getString("nome")
+                    if (nome != null) {
+                        nomes.add(nome)
+                    }
+                }
+
+                listaCampeonatos = nomes
+            }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
+        Text(
+            text = "Campeonatos",
+            fontSize = 24.sp
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        listaCampeonatos.forEach { nome ->
+            Text(
+                text = nome,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(8.dp)
+            )
         }
     }
 }
